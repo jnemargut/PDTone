@@ -81,6 +81,6 @@ The Goertzel filter computes per-tone power directly, so the decoder is cheap en
 
 ## License
 
-MIT © jontomato. See [LICENSE](LICENSE).
+MIT © Jon Nemargut. See [LICENSE](LICENSE).
 
 Built for [Sound Mailbox](https://soundmailbox.com), a Playdate sound-toy.
