@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PDTone demo</title>
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;max-width:520px;margin:40px auto;padding:0 18px;line-height:1.5;color:#111}
+  h1{font-size:24px;margin:0 0 4px}
+  p.sub{color:#666;margin:0 0 24px}
+  input{width:100%;font-size:18px;padding:12px;border:2px solid #111;border-radius:8px;box-sizing:border-box}
+  button{margin-top:12px;width:100%;font-size:16px;font-weight:700;padding:13px;border:2px solid #111;border-radius:9px;background:#111;color:#fff;cursor:pointer}
+  button.alt{background:#fff;color:#111}
+  .got{font-size:30px;font-weight:800;min-height:40px;margin:18px 0 0;word-break:break-word}
+  .log{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#888;white-space:pre-wrap;margin-top:14px;max-height:120px;overflow:auto}
+  section{border:2px solid #111;border-radius:12px;padding:16px;margin-bottom:18px}
+</style>
+</head>
+<body>
+  <h1>🔊 PDTone</h1>
+  <p class="sub">Send short text over sound. Open this on two devices in the same room.</p>
+
+  <section>
+    <strong>Send</strong>
+    <input id="msg" maxlength="40" value="hi there">
+    <button id="send">▶ Send</button>
+  </section>
+
+  <section>
+    <strong>Receive</strong>
+    <div class="got" id="got">…</div>
+    <button id="listen" class="alt">🎙 Listen</button>
+    <div class="log" id="log"></div>
+  </section>
+
+<script src="pdtone.js"></script>
+<script>
+  const log = s => { const el = document.getElementById('log'); el.textContent = (s + "\n" + el.textContent).slice(0, 1500); };
+
+  document.getElementById('send').onclick = () => {
+    const m = document.getElementById('msg').value || "";
+    const { duration, bytes } = PDTone.send(m);
+    log(`sent "${m}" (${bytes.length}B, ~${duration.toFixed(1)}s)`);
+  };
+
+  let rx = null;
+  const btn = document.getElementById('listen');
+  btn.onclick = async () => {
+    if (rx && rx.isListening()) { rx.stop(); rx = null; btn.textContent = '🎙 Listen'; return; }
+    rx = PDTone.createReceiver({
+      onMessage: (m) => { document.getElementById('got').textContent = m; log(`✓ "${m}"`); },
+      onStatus:  (s, d) => log(s + (d.sampleRate ? ` @ ${d.sampleRate}Hz` : '')),
+      onError:   (e) => log('error: ' + e.message)
+    });
+    try { await rx.start(); btn.textContent = '⏹ Stop'; } catch (e) { rx = null; }
+  };
+</script>
+</body>
+</html>
